@@ -23,8 +23,11 @@ jobs:
 
       - name: Accept Android SDK licenses and install SDK 36
         run: |
-          yes | sdkmanager --licenses > /dev/null 2>&1 || true
-          sdkmanager "platforms;android-36.1" "platforms;android-36" "build-tools;36.0.0" || true
+          SDK_MANAGER="$(command -v sdkmanager || find "${ANDROID_HOME:-$ANDROID_SDK_ROOT}" -name sdkmanager -type f 2>/dev/null | head -n 1)"
+          if [ -n "$SDK_MANAGER" ]; then
+            yes | "$SDK_MANAGER" --licenses > /dev/null 2>&1 || true
+            "$SDK_MANAGER" "platforms;android-36.1" "platforms;android-36" "build-tools;36.0.0" || true
+          fi
 
       - name: Prepare debug keystore
         run: |
@@ -34,13 +37,14 @@ jobs:
             keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           fi
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '9.3.1'
+      - name: Install Gradle 9.3.1
+        run: |
+          curl -sSL https://services.gradle.org/distributions/gradle-9.3.1-bin.zip -o /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /tmp
+          /tmp/gradle-9.3.1/bin/gradle --version
 
       - name: Build Debug APK
-        run: gradle assembleDebug --no-daemon --stacktrace
+        run: /tmp/gradle-9.3.1/bin/gradle assembleDebug --no-daemon -Dorg.gradle.jvmargs="-Xmx3g -Dfile.encoding=UTF-8" --stacktrace
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
