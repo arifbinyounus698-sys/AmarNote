@@ -1,0 +1,10 @@
+{
+  "name": "Remix AmarNote",
+  "description": "Offline Personal Salary Record, 10-Year Digital Ledger, Prayer Times, Makruh Times, Qibla Compass \u0026 Utility Calculator",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
